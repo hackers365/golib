@@ -18,7 +18,7 @@ type confClient struct {
 }
 
 func NewConfClient(host string) ConfClient {
-	return &confClient{Host: host}
+	return &confClient{Host: host, ConfType: "json"}
 }
 
 func (c *confClient) ParseConfig(confName string) (*viper.Viper, error) {
