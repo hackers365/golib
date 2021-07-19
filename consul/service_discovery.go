@@ -15,7 +15,7 @@ type ServiceRegistry interface {
 	GetInstances(serviceId string) ([]ServiceInstance, error)
 	GetServices() ([]string, error)
 	TtlKeepalive(checkId string, note string) error
-	WatchPlan(wType, serviceName string, handler watch.HandlerFunc) error
+	WatchPlan(serviceName string, handler func([]ServiceInstance)) error
 }
 
 type consulServiceRegistry struct {
@@ -54,10 +54,10 @@ func NewConsulServiceRegistry(host string, port int, token string) (ServiceRegis
 /**
  * 服务发现的watch
  */
-func (c *consulServiceRegistry) WatchPlan(wType, serviceName string, handler watch.HandlerFunc) error {
+func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]ServiceInstance)) error {
 	watchConfig := make(map[string]interface{})
 
-  watchConfig["type"] = wType
+  watchConfig["type"] = "service"
   watchConfig["service"] = serviceName
   watchConfig["handler_type"] = "script"
 
@@ -66,7 +66,17 @@ func (c *consulServiceRegistry) WatchPlan(wType, serviceName string, handler wat
   	fmt.Println(err)
   	return err
   }
-  watchPlan.Handler = handler
+
+  cb := func(lastIndex uint64, result interface{}) {
+      serviceList := result.([]*api.ServiceEntry)
+			ret := make([]ServiceInstance, len(serviceList))
+			for index, service := range serviceList {
+				ret[index] = getServiceInstance(service)
+			}
+			handler(ret)
+  }
+
+  watchPlan.Handler = cb
 
   return watchPlan.Run(fmt.Sprintf("%s:%d", c.host, c.port))
 }
@@ -159,19 +169,22 @@ func (c *consulServiceRegistry) GetInstances(serviceId string) ([]ServiceInstanc
 	serviceList, _, _ := c.client.Health().Service(serviceId, "", true, nil)
 	if len(serviceList) > 0 {
 		result := make([]ServiceInstance, len(serviceList))
-		for index, sever := range serviceList {
-			s := &DefaultServiceInstance{
-				InstanceId: sever.Service.ID,
-				ServiceId:  sever.Service.Service,
-				Host:       sever.Service.Address,
-				Port:       sever.Service.Port,
-				Metadata:   sever.Service.Meta,
-			}
-			result[index] = s
+		for index, service := range serviceList {
+			result[index] = getServiceInstance(service)
 		}
 		return result, nil
 	}
 	return nil, nil
+}
+
+func getServiceInstance(service *api.ServiceEntry) ServiceInstance {
+	return &DefaultServiceInstance{
+		InstanceId: service.Service.ID,
+		ServiceId:  service.Service.Service,
+		Host:       service.Service.Address,
+		Port:       service.Service.Port,
+		Metadata:   service.Service.Meta,
+	}
 }
 
 /**

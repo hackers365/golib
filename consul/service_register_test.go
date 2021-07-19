@@ -5,8 +5,8 @@ import (
 	_"github.com/gin-gonic/gin"
 	"testing"
 	"time"
-	"encoding/json"
-	"github.com/hashicorp/consul/api"
+	_"encoding/json"
+	_"github.com/hashicorp/consul/api"
 )
 
 // go test -v service_register_test.go conf_center.go service_discovery.go service_instance.go
@@ -35,14 +35,12 @@ func TestConsulServiceRegistry(t *testing.T) {
 	serviceInstanceInfo.SetTtlCheck("30s")
 	serviceInstanceInfo.SetDeregisterAfter("300s")
 
-  handler := func(lastIndex uint64, result interface{}) {
-      services := result.([]*api.ServiceEntry)
-      str, _ := json.Marshal(services)
-      fmt.Println("notify:" + string(str))
+  handler := func(serviceList []ServiceInstance) {
+  	fmt.Println(serviceList)
   }
 
 
-	go registryDiscoveryClient.WatchPlan("service", "service-ttl-checks", handler)
+	go registryDiscoveryClient.WatchPlan("service-ttl-checks", handler)
 
 	/*serviceInstanceInfo, _ := NewDefaultServiceInstance("go-user-server", ip, portApi,
 		isSecure, map[string]string{"user": "zyn"}, "", check)*/
@@ -55,8 +53,8 @@ func TestConsulServiceRegistry(t *testing.T) {
 
 	checkId := serviceInstanceInfo.GetCheck().CheckID
 	for {
-		srvList, _ := registryDiscoveryClient.GetInstances("service-ttl-checks")
-		fmt.Println(srvList)
+		_, _ = registryDiscoveryClient.GetInstances("service-ttl-checks")
+		//fmt.Println(srvList)
 
 		err := registryDiscoveryClient.TtlKeepalive(checkId, "pass")
 		fmt.Println(err)
