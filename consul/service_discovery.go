@@ -27,17 +27,9 @@ type consulServiceRegistry struct {
 	localServiceInstance ServiceInstance
 }
 
-func NewConsulServiceRegistry(host string, port int, token string) (ServiceRegistry, error) {
-	if len(host) < 3 {
-		return nil, fmt.Errorf("check host")
-	}
-
-	if port <= 0 || port > 65535 {
-		return nil, fmt.Errorf("check port, port should between 1 and 65535")
-	}
-
+func NewConsulServiceRegistry(addr string, token string) (ServiceRegistry, error) {
 	config := api.DefaultConfig()
-	config.Address = host + ":" + strconv.Itoa(port)
+	config.Address = addr
 	config.Token = token
 	client, err := api.NewClient(config)
 	if err != nil {
