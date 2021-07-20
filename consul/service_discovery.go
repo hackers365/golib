@@ -2,7 +2,6 @@ package consul
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
@@ -19,8 +18,7 @@ type ServiceRegistry interface {
 }
 
 type consulServiceRegistry struct {
-	host string
-	port int
+	addr string
 	token string
 	serviceInstances     map[string]map[string]ServiceInstance
 	client               api.Client
@@ -37,8 +35,7 @@ func NewConsulServiceRegistry(addr string, token string) (ServiceRegistry, error
 	}
 
 	instance := &consulServiceRegistry{client: *client}
-	instance.host = host
-	instance.port = port
+	instance.addr = addr
 	instance.token = token
 	return instance, nil
 }
@@ -70,7 +67,7 @@ func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]Ser
 
   watchPlan.Handler = cb
 
-  return watchPlan.Run(fmt.Sprintf("%s:%d", c.host, c.port))
+  return watchPlan.Run(c.addr)
 }
 
 /**

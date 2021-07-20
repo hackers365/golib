@@ -12,9 +12,9 @@ import (
 // go test -v service_register_test.go conf_center.go service_discovery.go service_instance.go
 
 func TestConsulServiceRegistry(t *testing.T) {
-	host := "192.168.208.214"
-	port := 8500
-	registryDiscoveryClient, _ := NewConsulServiceRegistry(host, port, "")
+	/*host := "192.168.208.214"
+	port := 8500*/
+	registryDiscoveryClient, _ := NewConsulServiceRegistry("192.168.208.214:8500", "")
 
 	/*check := new(api.AgentServiceCheck)
 	schema := "http"
@@ -75,10 +75,10 @@ func TestConsulServiceRegistry(t *testing.T) {
 }
 
 func TestConsulServiceDiscovery2(t *testing.T) {
-	host := "192.168.208.214"
-	port := 8500
+	/*host := "192.168.208.214"
+	port := 8500*/
 	token := ""
-	registryDiscoveryClient, err := NewConsulServiceRegistry(host, port, token)
+	registryDiscoveryClient, err := NewConsulServiceRegistry("192.168.208.214:8500", token)
 	if err != nil {
 		panic(err)
 	}
