@@ -5,13 +5,44 @@ import (
 	_"github.com/gin-gonic/gin"
 	"testing"
 	"time"
-	_"encoding/json"
+	"encoding/json"
 	_"github.com/hashicorp/consul/api"
 )
 
 // go test -v service_register_test.go conf_center.go service_discovery.go service_instance.go
 
-func TestConsulServiceRegistry(t *testing.T) {
+func TestServiceRegistry(t *testing.T) {
+	instance, err := NewRegistry("192.168.208.214:8500", "")
+	if err != nil {
+		fmt.Println("NewRegistry error")
+		return
+	}
+
+	//watch
+	handler := func(i []ServiceInstance) {
+		b, _ := json.Marshal(i)
+		fmt.Println(string(b))
+	}
+	go instance.Watch("hello-service", handler)
+
+
+
+	instance.RegisterWithTtl("hello-service", "192.168.208.209", 1000, "30s", 10, "20s")
+
+	//instance.RegisterWithHttp("hello-http-service", "192.168.208.209", 1001, "http://192.168.208.214/", "10s", "30s", "20s")
+	//instance.Deregister()
+
+	/*iList, _ := instance.GetService("hello-service")
+	for _, v := range iList {
+		fmt.Println(v)
+	}*/
+
+	time.Sleep(5 * time.Second)
+	instance.Deregister()
+	time.Sleep(20 * time.Second)
+}
+
+func ssConsulServiceRegistry(t *testing.T) {
 	/*host := "192.168.208.214"
 	port := 8500*/
 	registryDiscoveryClient, _ := NewConsulServiceRegistry("192.168.208.214:8500", "")

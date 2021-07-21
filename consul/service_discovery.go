@@ -1,8 +1,6 @@
 package consul
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
 )
@@ -52,7 +50,6 @@ func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]Ser
 
   watchPlan, err := watch.Parse(watchConfig)
   if err != nil {
-  	fmt.Println(err)
   	return err
   }
 

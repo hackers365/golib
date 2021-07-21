@@ -29,12 +29,12 @@ func (c *confClient) ParseConfig(confName string) (*viper.Viper, error) {
 	err := runtime_viper.ReadRemoteConfig()
 	if err != nil {
 		log.Error("【REMOTE CONF ERROR】  error: ", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	go func() {
 		for {
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 10)
 			err := runtime_viper.WatchRemoteConfig()
 			if err != nil {
 				log.Error("【REMOTE CONF ERROR】  error: ", err.Error())
