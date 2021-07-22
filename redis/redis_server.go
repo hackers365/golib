@@ -5,7 +5,6 @@ import (
 )
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/go-redis/redis"
 )
 
@@ -42,7 +41,6 @@ func NewRedisInstance(conf *RedisConf) (*MRedis, error) {
 	}
 
 	instance.redisClient = redisClient
-	log.Debug("redisClient: %+v", redisClient)
 
 	return instance, nil
 }

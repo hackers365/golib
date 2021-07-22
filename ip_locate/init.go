@@ -15,7 +15,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 
 	maxminddb "github.com/oschwald/maxminddb-golang"
 )
@@ -69,7 +68,6 @@ func monitorIpCacheMap() {
 
 			hitRatio = float32(num_hit) / float32(num_hit+num_miss)
 
-			log.Info("query total num: %d hitCached num: %d missCache num: %d hitRatio: %.3f", num_hit+num_miss, num_hit, num_miss, hitRatio)
 		}
 
 	}

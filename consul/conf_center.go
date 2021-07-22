@@ -3,7 +3,6 @@ package consul
 import (
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
 )
@@ -28,7 +27,6 @@ func (c *confClient) ParseConfig(confName string) (*viper.Viper, error) {
 	runtime_viper.SetConfigType(c.ConfType)
 	err := runtime_viper.ReadRemoteConfig()
 	if err != nil {
-		log.Error("【REMOTE CONF ERROR】  error: ", err.Error())
 		return nil, err
 	}
 
@@ -37,7 +35,7 @@ func (c *confClient) ParseConfig(confName string) (*viper.Viper, error) {
 			time.Sleep(time.Second * 10)
 			err := runtime_viper.WatchRemoteConfig()
 			if err != nil {
-				log.Error("【REMOTE CONF ERROR】  error: ", err.Error())
+				continue				
 			}
 		}
 	}()

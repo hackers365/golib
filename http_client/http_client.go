@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -99,7 +98,6 @@ func (h *httpClient) Post(requestUrl string, params map[string]string, header ma
 func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 	resp, err := h.instance.Do(req)
 	if err != nil {
-		log.Error("http request do error: ", err)
 		return 0, nil, fmt.Errorf("http client.do():%s", err.Error())
 	}
 
@@ -112,7 +110,6 @@ func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 	// read from response
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error("ioutil readall error: ", err)
 		return 0, nil, fmt.Errorf("ReadAll():%s", err.Error())
 	}
 	return resp.StatusCode, bytes, nil

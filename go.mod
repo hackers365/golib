@@ -2,10 +2,7 @@ module wx-gitlab.xunlei.cn/shijingbo/golib
 
 go 1.16
 
-replace github.com/Sirupsen/logrus v1.8.1 => github.com/sirupsen/logrus v1.8.1
-
 require (
-	github.com/Sirupsen/logrus v1.8.1
 	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-redis/redis v6.15.9+incompatible
