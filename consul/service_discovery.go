@@ -47,6 +47,7 @@ func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]Ser
   watchConfig["type"] = "service"
   watchConfig["service"] = serviceName
   watchConfig["handler_type"] = "script"
+  watchConfig["passingonly"] = true
 
   watchPlan, err := watch.Parse(watchConfig)
   if err != nil {
