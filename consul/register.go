@@ -10,6 +10,7 @@ type Registry interface {
   Deregister()
   GetService(serviceName string) ([]ServiceInstance, error)
   Watch(serviceName string, handler func([]ServiceInstance)) error
+  GetAndWatch(serviceName string, handler func([]ServiceInstance)) ([]ServiceInstance, error)
 }
 
 type registry struct {
@@ -85,4 +86,13 @@ func (r *registry) GetService(serviceName string) ([]ServiceInstance, error) {
  
 func (r *registry) Watch(serviceName string, handler func([]ServiceInstance)) error {
 	return r.srcRegistry.WatchPlan(serviceName, handler)
+}
+
+func (r *registry) GetAndWatch(serviceName string, handler func([]ServiceInstance)) ([]ServiceInstance, error) {
+	serviceList, err := r.GetService(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	go r.Watch(serviceName, handler)
+	return serviceList, err
 }
