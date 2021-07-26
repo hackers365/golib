@@ -7,13 +7,13 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	url := "http://192.168.208.214"
+	url := "http://192.168.123.12"
 	params := map[string]string{
 		"k1": "v1",
 		"k2": "v2",
 	}
 	header := map[string]string{
-		"Host": "sjbapi-miner_manage_system.onethingpcs.com",
+		"Host": "abc.com",
 	}
 	httpClient := NewHttpClient()
 	status, retData, err := httpClient.Get(url, params, header, 10)

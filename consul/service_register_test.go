@@ -27,7 +27,7 @@ func TestServiceRegistry(t *testing.T) {
 
 
 
-	//instance.RegisterWithTtl("hello-service", "192.168.208.209", 1000, "30s", 10, "20s")
+	instance.RegisterWithTtl("UploadService", "192.168.208.209", 1000, "30s", 10, "20s")
 
 	//instance.RegisterWithHttp("hello-http-service", "192.168.208.209", 1001, "http://192.168.208.214/", "10s", "30s", "20s")
 	//instance.Deregister()
