@@ -84,11 +84,11 @@ func (r *registry) GetService(serviceName string) ([]ServiceInstance, error) {
 	return r.srcRegistry.GetInstances(serviceName)
 }
  
-func (r *registry) Watch(serviceName string, handler func([]ServiceInstance)) error {
+func (r *registry) Watch(serviceName string, handler func(string, []ServiceInstance)) error {
 	return r.srcRegistry.WatchPlan(serviceName, handler)
 }
 
-func (r *registry) GetAndWatch(serviceName string, handler func([]ServiceInstance)) ([]ServiceInstance, error) {
+func (r *registry) GetAndWatch(serviceName string, handler func(string, []ServiceInstance)) ([]ServiceInstance, error) {
 	serviceList, err := r.GetService(serviceName)
 	if err != nil {
 		return nil, err

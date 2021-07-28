@@ -41,7 +41,7 @@ func NewConsulServiceRegistry(addr string, token string) (ServiceRegistry, error
 /**
  * 服务发现的watch
  */
-func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]ServiceInstance)) error {
+func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func(string, []ServiceInstance)) error {
 	watchConfig := make(map[string]interface{})
 
   watchConfig["type"] = "service"
@@ -60,7 +60,7 @@ func (c *consulServiceRegistry) WatchPlan(serviceName string, handler func([]Ser
 			for index, service := range serviceList {
 				ret[index] = getServiceInstance(service)
 			}
-			handler(ret)
+			handler(serviceName, ret)
   }
 
   watchPlan.Handler = cb
