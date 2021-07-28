@@ -17,11 +17,11 @@ func TestServiceDiscovery(t *testing.T) {
 		return
 	}
 
-	err = discovery.WatchAndSave("UploadService")
+	/*err = discovery.WatchAndSave("UploadService")
 	if err != nil {
 		fmt.Println(err)
 		return
-	}
+	}*/
 	
 	go register()
 	for i := 0; i < 10; i++ {
@@ -34,14 +34,14 @@ func TestServiceDiscovery(t *testing.T) {
 }
 
 func get(discovery Discovery) {
-	for i := 0; i < 5000000; i++ {
+	for i := 0; i < 10; i++ {
 		instance, err := discovery.GetInstance("UploadService")
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		_ = instance
-		//fmt.Println(instance)
+		fmt.Println(instance)
 		//time.Sleep(2 * time.Second)
 	}
 }

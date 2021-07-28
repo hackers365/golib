@@ -7,7 +7,6 @@ import (
 )
 
 type Discovery interface {
-  WatchAndSave(serviceName string) error
   GetInstance(serviceName string) (string, error)
 }
 
@@ -33,28 +32,17 @@ func NewDiscovery(consulAddr string, token string) (Discovery, error) {
   return reg, nil
 }
 
-func (r *discovery) WatchAndSave(serviceName string) error {
-  handler := func(svcName string, instances []ServiceInstance) {
-    r.service2Instances.Store(svcName, instances)
-  }
-  
-  serviceList, err := r.srcRegistry.GetInstances(serviceName)
-  if err != nil {
-    return err
-  }
-
-  var index uint64
-  r.service2Instances.Store(serviceName, serviceList)
-  r.service2Index.Store(serviceName, &index)
-  go r.srcRegistry.WatchPlan(serviceName, handler)
-  return err
-}
-
 func (r *discovery) GetInstance(serviceName string) (string, error) {
   var serviceList []ServiceInstance
   var instance string
+  var err error
   if val, ok := r.service2Instances.Load(serviceName); ok {
     serviceList = val.([]ServiceInstance)
+  } else {
+    serviceList, err = r.watchAndSave(serviceName)
+    if err != nil {
+      return "", err
+    }
   }
 
   if len(serviceList) == 0 {
@@ -75,6 +63,23 @@ func (r *discovery) GetInstance(serviceName string) (string, error) {
   }
 
   return instance, nil
+}
+
+func (r *discovery) watchAndSave(serviceName string) ([]ServiceInstance, error) {
+  handler := func(svcName string, instances []ServiceInstance) {
+    r.service2Instances.Store(svcName, instances)
+  }
+  
+  serviceList, err := r.srcRegistry.GetInstances(serviceName)
+  if err != nil {
+    return nil, err
+  }
+
+  var index uint64
+  r.service2Instances.Store(serviceName, serviceList)
+  r.service2Index.Store(serviceName, &index)
+  go r.srcRegistry.WatchPlan(serviceName, handler)
+  return serviceList, err
 }
 
 func getUrlFromInstance(instance ServiceInstance) string {
