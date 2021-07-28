@@ -34,8 +34,8 @@ func NewDiscovery(consulAddr string, token string) (Discovery, error) {
 }
 
 func (r *discovery) WatchAndSave(serviceName string) error {
-  handler := func(instances []ServiceInstance) {
-    r.service2Instances.Store(serviceName, instances)
+  handler := func(svcName string, instances []ServiceInstance) {
+    r.service2Instances.Store(svcName, instances)
   }
   
   serviceList, err := r.srcRegistry.GetInstances(serviceName)
