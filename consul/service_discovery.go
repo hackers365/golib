@@ -12,7 +12,7 @@ type ServiceRegistry interface {
 	GetInstances(serviceId string) ([]ServiceInstance, error)
 	GetServices() ([]string, error)
 	TtlKeepalive(checkId string, note string) error
-	WatchPlan(serviceName string, handler func([]ServiceInstance)) error
+	WatchPlan(serviceName string, handler func(string, []ServiceInstance)) error
 }
 
 type consulServiceRegistry struct {

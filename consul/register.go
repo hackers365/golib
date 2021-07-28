@@ -9,8 +9,8 @@ type Registry interface {
   RegisterWithTtl(serviceName string, ip string, port int, ttl string, keepaliveTime int, deRegisterTime string) error
   Deregister()
   GetService(serviceName string) ([]ServiceInstance, error)
-  Watch(serviceName string, handler func([]ServiceInstance)) error
-  GetAndWatch(serviceName string, handler func([]ServiceInstance)) ([]ServiceInstance, error)
+  Watch(serviceName string, handler func(string, []ServiceInstance)) error
+  GetAndWatch(serviceName string, handler func(string, []ServiceInstance)) ([]ServiceInstance, error)
 }
 
 type registry struct {
