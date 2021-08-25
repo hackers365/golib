@@ -66,36 +66,29 @@ func (r *registry) RegisterWithTtl(serviceName string, ip string, port int, ttl 
 	}
 
 	registerAgainChan := make(chan bool)
-	serviceInsChan := make(chan *DefaultServiceInstance)
 
-	//keepalive
 	go func() {
 		for {
-			select {
-			case serviceInstance := <-serviceInsChan:
-				checkId := serviceInstance.GetCheck().CheckID
-				failedTimes := 0
-				for {
-					if failedTimes == FAILED_TIMES {
-						registerAgainChan <- true
-						break
-					}
-					err := r.srcRegistry.TtlKeepalive(checkId, "pass")
-					if err != nil {
-						log.Error("keep alive error:", err.Error())
-						failedTimes++
-						time.Sleep(1 * time.Second)
-						continue
-					}
-					failedTimes = 0
-					time.Sleep(time.Duration(keepaliveTime) * time.Second)
+			checkId := serviceInstanceInfo.GetCheck().CheckID
+			failedTimes := 0
+			for {
+				if failedTimes == FAILED_TIMES {
+					registerAgainChan <- true
+					break
 				}
+				err := r.srcRegistry.TtlKeepalive(checkId, "pass")
+				if err != nil {
+					log.Error("keep alive error:", err.Error())
+					failedTimes++
+					time.Sleep(1 * time.Second)
+					continue
+				}
+				failedTimes = 0
+				time.Sleep(time.Duration(keepaliveTime) * time.Second)
 			}
+			time.Sleep(1 * time.Second)
 		}
-
 	}()
-
-	serviceInsChan <- serviceInstanceInfo
 
 	go func() {
 		for {
@@ -108,7 +101,6 @@ func (r *registry) RegisterWithTtl(serviceName string, ip string, port int, ttl 
 						time.Sleep(1 * time.Second)
 						continue
 					}
-					serviceInsChan <- serviceInstanceInfo
 					break
 				}
 			}
