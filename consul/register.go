@@ -65,15 +65,18 @@ func (r *registry) RegisterWithTtl(serviceName string, ip string, port int, ttl 
 		return err
 	}
 
-	registerAgainChan := make(chan bool)
-
 	go func() {
 		for {
 			checkId := serviceInstanceInfo.GetCheck().CheckID
 			failedTimes := 0
 			for {
 				if failedTimes == FAILED_TIMES {
-					registerAgainChan <- true
+					err = r.srcRegistry.Register(serviceInstanceInfo)
+					if err != nil {
+						log.Error("register again error: ", err.Error())
+						time.Sleep(1 * time.Second)
+						continue
+					}
 					break
 				}
 				err := r.srcRegistry.TtlKeepalive(checkId, "pass")
@@ -87,24 +90,6 @@ func (r *registry) RegisterWithTtl(serviceName string, ip string, port int, ttl 
 				time.Sleep(time.Duration(keepaliveTime) * time.Second)
 			}
 			time.Sleep(1 * time.Second)
-		}
-	}()
-
-	go func() {
-		for {
-			select {
-			case <-registerAgainChan:
-				for {
-					err = r.srcRegistry.Register(serviceInstanceInfo)
-					if err != nil {
-						log.Error("register again error: ", err.Error())
-						time.Sleep(1 * time.Second)
-						continue
-					}
-					break
-				}
-			}
-
 		}
 	}()
 
