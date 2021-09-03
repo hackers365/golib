@@ -1,20 +1,24 @@
 package consul
 
 import (
+	// "fmt"
+	log "github.com/Sirupsen/logrus"
 	"time"
 )
 
+const FAILED_TIMES = 5
+
 type Registry interface {
-  RegisterWithHttp(serviceName string, ip string, port int, checkUrl string, interval string, timeout string, deRegisterTime string) error
-  RegisterWithTtl(serviceName string, ip string, port int, ttl string, keepaliveTime int, deRegisterTime string) error
-  Deregister()
-  GetService(serviceName string) ([]ServiceInstance, error)
-  Watch(serviceName string, handler func(string, []ServiceInstance)) error
-  GetAndWatch(serviceName string, handler func(string, []ServiceInstance)) ([]ServiceInstance, error)
+	RegisterWithHttp(serviceName string, ip string, port int, checkUrl string, interval string, timeout string, deRegisterTime string) error
+	RegisterWithTtl(serviceName string, ip string, port int, ttl string, keepaliveTime int, deRegisterTime string) error
+	Deregister()
+	GetService(serviceName string) ([]ServiceInstance, error)
+	Watch(serviceName string, handler func(string, []ServiceInstance)) error
+	GetAndWatch(serviceName string, handler func(string, []ServiceInstance)) ([]ServiceInstance, error)
 }
 
 type registry struct {
-  srcRegistry ServiceRegistry
+	srcRegistry ServiceRegistry
 }
 
 func NewRegistry(consulAddr string, token string) (Registry, error) {
@@ -36,7 +40,7 @@ func (r *registry) RegisterWithHttp(serviceName string, ip string, port int, che
 	if err != nil {
 		return err
 	}
-	
+
 	serviceInstanceInfo.SetHttpCheck(checkUrl, timeout, interval)
 	serviceInstanceInfo.SetDeregisterAfter(deRegisterTime)
 
@@ -61,15 +65,31 @@ func (r *registry) RegisterWithTtl(serviceName string, ip string, port int, ttl 
 		return err
 	}
 
-	//keepalive
 	go func() {
-		checkId := serviceInstanceInfo.GetCheck().CheckID
 		for {
-			err := r.srcRegistry.TtlKeepalive(checkId, "pass")
-			if err != nil {
-				continue
+			checkId := serviceInstanceInfo.GetCheck().CheckID
+			failedTimes := 0
+			for {
+				if failedTimes == FAILED_TIMES {
+					err = r.srcRegistry.Register(serviceInstanceInfo)
+					if err != nil {
+						log.Error("register again error: ", err.Error())
+						time.Sleep(1 * time.Second)
+						continue
+					}
+					break
+				}
+				err := r.srcRegistry.TtlKeepalive(checkId, "pass")
+				if err != nil {
+					log.Error("keep alive error:", err.Error())
+					failedTimes++
+					time.Sleep(1 * time.Second)
+					continue
+				}
+				failedTimes = 0
+				time.Sleep(time.Duration(keepaliveTime) * time.Second)
 			}
-			time.Sleep(time.Duration(keepaliveTime) * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 	}()
 
@@ -83,7 +103,7 @@ func (r *registry) Deregister() {
 func (r *registry) GetService(serviceName string) ([]ServiceInstance, error) {
 	return r.srcRegistry.GetInstances(serviceName)
 }
- 
+
 func (r *registry) Watch(serviceName string, handler func(string, []ServiceInstance)) error {
 	return r.srcRegistry.WatchPlan(serviceName, handler)
 }
