@@ -8,6 +8,7 @@ import (
 
 type Discovery interface {
   GetInstance(serviceName string) (string, error)
+  GetAll(serviceName string) ([]string, error)
 }
 
 type discovery struct {
@@ -63,6 +64,30 @@ func (r *discovery) GetInstance(serviceName string) (string, error) {
   }
 
   return instance, nil
+}
+
+func (r *discovery) GetAll(serviceName string) ([]string, error) {
+  var serviceList []ServiceInstance
+  var instanceList []string
+  var err error
+  if val, ok := r.service2Instances.Load(serviceName); ok {
+    serviceList = val.([]ServiceInstance)
+  } else {
+    serviceList, err = r.watchAndSave(serviceName)
+    if err != nil {
+      return []string{}, err
+    }
+  }
+
+  if len(serviceList) == 0 {
+    return []string{}, fmt.Errorf("not found serviceList")
+  }
+
+  for _, instance := range serviceList {
+    instanceList = append(instanceList, getUrlFromInstance(instance))
+  }
+
+  return instanceList, nil
 }
 
 func (r *discovery) watchAndSave(serviceName string) ([]ServiceInstance, error) {

@@ -24,8 +24,9 @@ func TestServiceDiscovery(t *testing.T) {
 	}*/
 	
 	go register()
+	time.Sleep(2 * time.Second)
 	for i := 0; i < 10; i++ {
-		go get(discovery)
+		go getAll(discovery)
 	}
 
 	
@@ -36,6 +37,19 @@ func TestServiceDiscovery(t *testing.T) {
 func get(discovery Discovery) {
 	for i := 0; i < 10; i++ {
 		instance, err := discovery.GetInstance("UploadService")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		_ = instance
+		fmt.Println(instance)
+		//time.Sleep(2 * time.Second)
+	}
+}
+
+func getAll(discovery Discovery) {
+	for i := 0; i < 10; i++ {
+		instance, err := discovery.GetAll("UploadService")
 		if err != nil {
 			fmt.Println(err)
 			return
