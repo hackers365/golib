@@ -40,11 +40,11 @@ func C() *ConsulLock {
 	return c
 }
 
-func GetLock(lockKey string, ttl string, lockDelay time.Duration) (<-chan struct{}, error) {
-	return C().GetLock(lockKey, ttl, lockDelay)
+func GetLock(lockKey string, serverName string, ttl string, lockDelay time.Duration) (<-chan struct{}, error) {
+	return C().GetLock(lockKey, serverName, ttl, lockDelay)
 }
 
-func (c *ConsulLock) GetLock(lockKey string, ttl string, lockDelay time.Duration) (<-chan struct{}, error) {
+func (c *ConsulLock) GetLock(lockKey string, serverName string, ttl string, lockDelay time.Duration) (<-chan struct{}, error) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -60,9 +60,10 @@ func (c *ConsulLock) GetLock(lockKey string, ttl string, lockDelay time.Duration
 
 	opts := &api.LockOptions{
 		Key:         lockKey,
+		Value:       []byte(serverName),
 		SessionTTL:  ttl,
 		LockDelay:   lockDelay,
-		LockTryOnce: true,
+		//LockTryOnce: true,
 	}
 	lockInstance, err := c.client.LockOpts(opts)
 	if err != nil {

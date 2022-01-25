@@ -13,7 +13,7 @@ func TestLock(t *testing.T) {
 	_, err := NewLock(addr, token)
 	assert.Equal(t, err, nil, "err must be nil")
 
-	lockKey := "hello_lock"
+	lockKey := "session_timeout_lock_key"
 	for {
 		closeChan, err := GetLock(lockKey, "10s", time.Duration(2*time.Second))
 		assert.Equal(t, err, nil, "err must be nil")
