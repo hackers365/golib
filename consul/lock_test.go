@@ -1,10 +1,10 @@
 package consul
 
 import (
-	_"fmt"
-	"time"
-	"testing"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"testing"
+	"time"
 )
 
 func TestLock(t *testing.T) {
@@ -14,11 +14,40 @@ func TestLock(t *testing.T) {
 	assert.Equal(t, err, nil, "err must be nil")
 
 	lockKey := "hello_lock"
-	lock, err := GetLock(lockKey, "10s", time.Duration(2 * time.Second))
-	assert.Equal(t, err, nil, "err must be nil")
+	for {
+		closeChan, err := GetLock(lockKey, "10s", time.Duration(2*time.Second))
+		assert.Equal(t, err, nil, "err must be nil")
+		fmt.Println("lock success")
+		select {
+		case <-closeChan:
 
-	stopCh := make(chan struct{}, 1)
-	ret, err := lock.Lock(stopCh)
-	assert.Equal(t, err, nil, "err must be nil")
-	assert.NotEqual(t, ret, nil, "lock must be not nil")
+		default:
+			fmt.Println("default")
+		}
+
+		closeChan, err = GetLock(lockKey, "10s", time.Duration(2*time.Second))
+		assert.Equal(t, err, nil, "err must be nil")
+
+		<-closeChan
+
+		fmt.Println("lock close")
+	}
+
+	/*
+		stopCh := make(chan struct{}, 1)
+		ret, err := lock.Lock(stopCh)
+		assert.Equal(t, err, nil, "err must be nil")
+		assert.NotEqual(t, ret, nil, "lock must be not nil")
+
+		fmt.Println("lock success")
+		<-ret
+		fmt.Println("lost lock")
+
+		lock, err = GetLock(lockKey, "10s", time.Duration(2 * time.Second))
+		assert.Equal(t, err, nil, "err must be nil")
+		ret, err = lock.Lock(stopCh)
+		assert.Equal(t, err, nil, "err must be nil")
+		assert.NotEqual(t, ret, nil, "lock must be not nil")
+	*/
+	//time.Sleep(100 * time.Second)
 }
