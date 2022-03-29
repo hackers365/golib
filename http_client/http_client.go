@@ -104,7 +104,7 @@ func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 	defer resp.Body.Close()
 	// check status code
 	if resp.StatusCode != http.StatusOK {
-		return 0, nil, fmt.Errorf("status code:%d", resp.StatusCode)
+		return resp.StatusCode, nil, fmt.Errorf("status code:%d", resp.StatusCode)
 	}
 
 	// read from response
