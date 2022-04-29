@@ -98,7 +98,10 @@ func (r *discovery) GetAllInstance(prefix string) []string {
   
   serviceList := []string{}
   for _, kv := range rangeResp.Kvs {
-    serviceList = append(serviceList, r.parseCb(string(kv.Value)))
+    filterHost := r.parseCb(string(kv.Value))
+    if filterHost != "" {
+      serviceList = append(serviceList, filterHost)
+    }
   }
   
   return serviceList
