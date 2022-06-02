@@ -14,6 +14,8 @@ import (
 type HttpClient interface {
 	Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error)
 	Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error)
+	GetV2(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error)
+	PostV2(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error)
 }
 
 type httpClient struct {
@@ -51,7 +53,6 @@ func NewHttpClient() HttpClient {
 }
 
 func (h *httpClient) Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error) {
-	h.instance.Timeout = time.Duration(timeout) * time.Second
 	//实例化req
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -77,7 +78,6 @@ func (h *httpClient) Get(url string, params map[string]string, header map[string
 }
 
 func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
-	h.instance.Timeout = time.Duration(timeout) * time.Second
 	bytesParams, _ := json.Marshal(params)
 	body := bytes.NewBuffer(bytesParams)
 	//实例化req
@@ -116,4 +116,99 @@ func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 	}
 	return resp.StatusCode, bytes, nil
 
+}
+
+func (h *httpClient) GetHttpClientWithTimeout(timeout int) *http.Client{
+	//init http client
+	if timeout == 0 {
+		timeout = 10
+	}
+
+	iClient := &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+	}
+
+	//init http transport
+	transport := &http.Transport{
+		//Proxy: http.ProxyURL(torProxyUrl),
+		DialContext: (&net.Dialer{
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		//MaxConnsPerHost: 1,
+		//DisableKeepAlives: true,
+	}
+
+	iClient.Transport = transport
+	return iClient
+}
+
+func (h *httpClient) GetV2(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error) {
+	client := h.GetHttpClientWithTimeout(timeout)
+	//实例化req
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, nil, err
+	}
+	//添加params
+	query := req.URL.Query()
+	for k, v := range params {
+		query.Add(k, v)
+	}
+	req.URL.RawQuery = query.Encode()
+
+	//添加header
+	for k, v := range header {
+		req.Header.Add(k, v)
+	}
+
+	if host, ok := header["Host"]; ok {
+		req.Host = host
+	}
+
+	return httpDo(client, req)
+}
+
+func (h *httpClient) PostV2(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
+	client := h.GetHttpClientWithTimeout(timeout)
+	bytesParams, _ := json.Marshal(params)
+	body := bytes.NewBuffer(bytesParams)
+	//实例化req
+	req, err := http.NewRequest("POST", requestUrl, body)
+	if err != nil {
+		return 0, nil, err
+	}
+	//添加header
+	for k, v := range header {
+		req.Header.Add(k, v)
+	}
+
+	if host, ok := header["Host"]; ok {
+		req.Host = host
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return httpDo(client, req)
+}
+
+func httpDo(client *http.Client, req *http.Request) (int, []byte, error) {
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, nil, fmt.Errorf("http client.do():%s", err.Error())
+	}
+
+	defer resp.Body.Close()
+	// check status code
+	if resp.StatusCode != http.StatusOK {
+		return resp.StatusCode, nil, fmt.Errorf("status code:%d", resp.StatusCode)
+	}
+
+	// read from response
+	dataBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, fmt.Errorf("ReadAll():%s", err.Error())
+	}
+
+	return resp.StatusCode, dataBytes, nil
 }
