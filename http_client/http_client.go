@@ -26,10 +26,13 @@ func GetHttpClient() HttpClient {
 	return client
 }
 
-func NewHttpClient() HttpClient {
+func NewHttpClient(timeout int) HttpClient {
 	//init http client
+	if timeout == 0 {
+		timeout = 10
+	}
 	iClient := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Duration(timeout) * time.Second,
 	}
 
 	//init http transport
