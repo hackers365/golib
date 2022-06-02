@@ -12,8 +12,8 @@ import (
 )
 
 type HttpClient interface {
-	Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error)
-	Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error)
+	Get(url string, params map[string]string, header map[string]string) (int, []byte, error)
+	Post(requestUrl string, params map[string]interface{}, header map[string]string) (int, []byte, error)
 }
 
 type httpClient struct {
@@ -53,7 +53,7 @@ func NewHttpClient(timeout int) HttpClient {
 	return client
 }
 
-func (h *httpClient) Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error) {
+func (h *httpClient) Get(url string, params map[string]string, header map[string]string) (int, []byte, error) {
 	//实例化req
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -78,7 +78,7 @@ func (h *httpClient) Get(url string, params map[string]string, header map[string
 	return h.do(req)
 }
 
-func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
+func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string) (int, []byte, error) {
 	bytesParams, _ := json.Marshal(params)
 	body := bytes.NewBuffer(bytesParams)
 	//实例化req
