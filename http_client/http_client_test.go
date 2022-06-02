@@ -15,8 +15,8 @@ func TestGet(t *testing.T) {
 	header := map[string]string{
 		"Host": "abc.com",
 	}
-	httpClient := NewHttpClient(10)
-	status, retData, err := httpClient.Get(url, params, header)
+	httpClient := NewHttpClient()
+	status, retData, err := httpClient.Get(url, params, header, 10)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -27,7 +27,7 @@ func TestGet(t *testing.T) {
 		"k1": "v1",
 		"k2": "v2",
 	}
-	status, retData, err = httpClient.Post(url, params2, header)
+	status, retData, err = httpClient.Post(url, params2, header, 10)
 	if err != nil {
 		fmt.Println(err)
 		return

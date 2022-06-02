@@ -12,8 +12,8 @@ import (
 )
 
 type HttpClient interface {
-	Get(url string, params map[string]string, header map[string]string) (int, []byte, error)
-	Post(requestUrl string, params map[string]interface{}, header map[string]string) (int, []byte, error)
+	Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error)
+	Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error)
 }
 
 type httpClient struct {
@@ -26,13 +26,10 @@ func GetHttpClient() HttpClient {
 	return client
 }
 
-func NewHttpClient(timeout int) HttpClient {
+func NewHttpClient() HttpClient {
 	//init http client
-	if timeout == 0 {
-		timeout = 10
-	}
 	iClient := &http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
+		Timeout: 10 * time.Second,
 	}
 
 	//init http transport
@@ -53,7 +50,8 @@ func NewHttpClient(timeout int) HttpClient {
 	return client
 }
 
-func (h *httpClient) Get(url string, params map[string]string, header map[string]string) (int, []byte, error) {
+func (h *httpClient) Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error) {
+	h.instance.Timeout = time.Duration(timeout) * time.Second
 	//实例化req
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -78,7 +76,8 @@ func (h *httpClient) Get(url string, params map[string]string, header map[string
 	return h.do(req)
 }
 
-func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string) (int, []byte, error) {
+func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
+	h.instance.Timeout = time.Duration(timeout) * time.Second
 	bytesParams, _ := json.Marshal(params)
 	body := bytes.NewBuffer(bytesParams)
 	//实例化req
