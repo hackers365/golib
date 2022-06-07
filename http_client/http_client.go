@@ -130,29 +130,3 @@ func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 	return resp.StatusCode, bytes, nil
 
 }
-
-func (h *httpClient) PostV2(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
-	ctx, cancel := context.WithCancel(context.TODO())
-	time.AfterFunc(time.Duration(timeout)*time.Second, func() {
-		cancel()
-	})
-
-	bytesParams, _ := json.Marshal(params)
-	body := bytes.NewBuffer(bytesParams)
-	//实例化req
-	req, err := http.NewRequest("POST", requestUrl, body)
-	req = req.WithContext(ctx)
-	if err != nil {
-		return 0, nil, err
-	}
-	//添加header
-	for k, v := range header {
-		req.Header.Add(k, v)
-	}
-
-	if host, ok := header["Host"]; ok {
-		req.Host = host
-	}
-	req.Header.Set("Content-Type", "application/json")
-	return h.do(req)
-}
