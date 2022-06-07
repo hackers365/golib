@@ -23,6 +23,7 @@ type httpClient struct {
 }
 
 var client *httpClient
+var transport *http.Transport
 
 func GetHttpClient() HttpClient {
 	return client
@@ -35,7 +36,7 @@ func NewHttpClient() HttpClient {
 	}
 
 	//init http transport
-	transport := &http.Transport{
+	transport = &http.Transport{
 		//Proxy: http.ProxyURL(torProxyUrl),
 		DialContext: (&net.Dialer{
 			KeepAlive: 30 * time.Second,
@@ -118,30 +119,17 @@ func (h *httpClient) do(req *http.Request) (int, []byte, error) {
 
 }
 
-func (h *httpClient) GetHttpClientWithTimeout(timeout int) *http.Client{
+func (h *httpClient) GetHttpClientWithTimeout(timeout int) *http.Client {
 	//init http client
 	if timeout == 0 {
 		timeout = 10
 	}
 
 	iClient := &http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
+		Timeout:   time.Duration(timeout) * time.Second,
+		Transport: transport,
 	}
 
-	//init http transport
-	transport := &http.Transport{
-		//Proxy: http.ProxyURL(torProxyUrl),
-		DialContext: (&net.Dialer{
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 100,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-		//MaxConnsPerHost: 1,
-		//DisableKeepAlives: true,
-	}
-
-	iClient.Transport = transport
 	return iClient
 }
 
