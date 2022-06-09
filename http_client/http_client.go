@@ -2,6 +2,7 @@ package http_client
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -21,6 +22,7 @@ type httpClient struct {
 }
 
 var client *httpClient
+var transport *http.Transport
 
 func GetHttpClient() HttpClient {
 	return client
@@ -33,7 +35,7 @@ func NewHttpClient() HttpClient {
 	}
 
 	//init http transport
-	transport := &http.Transport{
+	transport = &http.Transport{
 		//Proxy: http.ProxyURL(torProxyUrl),
 		DialContext: (&net.Dialer{
 			KeepAlive: 30 * time.Second,
@@ -51,11 +53,18 @@ func NewHttpClient() HttpClient {
 }
 
 func (h *httpClient) Get(url string, params map[string]string, header map[string]string, timeout int) (int, []byte, error) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	time.AfterFunc(time.Duration(timeout)*time.Second, func() {
+		cancel()
+	})
+
 	//实例化req
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return 0, nil, err
 	}
+	req = req.WithContext(ctx)
+
 	//添加params
 	query := req.URL.Query()
 	for k, v := range params {
@@ -76,6 +85,11 @@ func (h *httpClient) Get(url string, params map[string]string, header map[string
 }
 
 func (h *httpClient) Post(requestUrl string, params map[string]interface{}, header map[string]string, timeout int) (int, []byte, error) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	time.AfterFunc(time.Duration(timeout)*time.Second, func() {
+		cancel()
+	})
+
 	bytesParams, _ := json.Marshal(params)
 	body := bytes.NewBuffer(bytesParams)
 	//实例化req
@@ -83,6 +97,7 @@ func (h *httpClient) Post(requestUrl string, params map[string]interface{}, head
 	if err != nil {
 		return 0, nil, err
 	}
+	req = req.WithContext(ctx)
 	//添加header
 	for k, v := range header {
 		req.Header.Add(k, v)

@@ -16,14 +16,18 @@ func TestGet(t *testing.T) {
 		"Host": "abc.com",
 	}
 	httpClient := NewHttpClient()
-	status, retData, err := httpClient.Get(url, params, header, 10)
+	status, retData, err := httpClient.Get(url, params, header, 3)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("status: %v, retData: %s\n", status, string(retData))
 
-	status, retData, err = httpClient.Post(url, params, header, 10)
+	params2 := map[string]interface{}{
+		"k1": "v1",
+		"k2": "v2",
+	}
+	status, retData, err = httpClient.Post(url, params2, header, 3)
 	if err != nil {
 		fmt.Println(err)
 		return
