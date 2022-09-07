@@ -18,25 +18,40 @@ type RedisConf struct {
   Db      int    `json:"db"`
 }
 
-type MRedis struct {
-  redisClient *redis.Client
+type mredis struct {
+  sync.RWMutex
+  redisMap map[string]*redis.Client
 }
 
-var instance = initRedis()
-
-//init
-func initRedis() *MRedis {
-  m := &MRedis{}
-  return m
+func (m *mredis) Add(name string, instance *redis.Client) {
+  m.Lock()
+  defer m.Unlock()
+  m.redisMap[name] = instance
 }
 
-//get
-func GetRedis() *redis.Client {
-  return instance.redisClient
+func (m *mredis) Get(name string) *redis.Client {
+  m.RLock()
+  defer m.RUnlock()
+  if redisInstance, ok := m.redisMap[name]; ok {
+    return redisInstance
+  }
+  return nil
+}
+
+var mRedis *mredis
+
+func init() {
+  mRedis = &mredis{
+    redisMap: map[string]*redis.Client{},
+  }
+}
+
+func GetRedis(name string) *redis.Client {
+  return mRedis.Get(name)
 }
 
 //init instance
-func NewRedisInstance(conf *RedisConf) (*MRedis, error) {
+func NewRedisInstance(name string, conf *RedisConf) (*redis.Client, error) {
   redisClient, err := initRedisInstance(conf.Host, conf.Port, conf.Pwd, conf.Db)
   if err != nil {
     return nil, err
@@ -50,14 +65,14 @@ func NewRedisInstance(conf *RedisConf) (*MRedis, error) {
   redisCollector.Client = new(RedisClient)
   redisCollector.execDurationHistogram = HistogramRedisMetric
   addRedisExecDuration(redisClient)
-  instance.redisClient = redisClient
+  mRedis.Add(name, redisClient)
 
   _, err = redisClient.Ping().Result()
   if err != nil {
     return nil, err
   }
 
-  return instance, nil
+  return redisClient, nil
 }
 
 var redisCollector = &RedisCollector{}

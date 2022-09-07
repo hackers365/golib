@@ -23,13 +23,15 @@ func TestRedis(t *testing.T) {
 	SetMetrics(metricRouter)
 	go metricRouter.Run(":8534")*/
 
-	_, err := NewRedisInstance(conf)
+	name := "default"
+
+	_, err := NewRedisInstance(name, conf)
 	assert.Equal(t, err, nil, "err must be nil")
 
-	err = GetRedis().Set("key", "value", 0).Err()
+	err = GetRedis(name).Set("key", "value", 0).Err()
 	assert.Equal(t, err, nil, "err must be nil")
 
-	val, err := GetRedis().Get("key").Result()
+	val, err := GetRedis(name).Get("key").Result()
 	assert.Equal(t, err, nil, "err must be nil")
 	fmt.Println(val)
 }
