@@ -44,6 +44,8 @@ func init() {
   mRedis = &mredis{
     redisMap: map[string]*redis.Client{},
   }
+  //注册指标
+  RegisterRedisPrometheus()
 }
 
 func GetRedis(name string) *redis.Client {
@@ -56,15 +58,8 @@ func NewRedisInstance(name string, conf *RedisConf) (*redis.Client, error) {
   if err != nil {
     return nil, err
   }
-  // 注册指标
-  err = registerRedisPrometheus()
-  if err != nil {
-    return nil, err
-  }
 
-  redisCollector.Client = new(RedisClient)
-  redisCollector.execDurationHistogram = HistogramRedisMetric
-  addRedisExecDuration(redisClient)
+  AddRedisExecDuration(redisClient)
   mRedis.Add(name, redisClient)
 
   _, err = redisClient.Ping().Result()
@@ -74,8 +69,6 @@ func NewRedisInstance(name string, conf *RedisConf) (*redis.Client, error) {
 
   return redisClient, nil
 }
-
-var redisCollector = &RedisCollector{}
 
 func initRedisInstance(host string, port int, passwd string, db int) (*redis.Client, error) {
   addr := fmt.Sprintf("%s:%d", host, port)
@@ -100,8 +93,8 @@ var (
 )
 
 // RegisterRedisPrometheus 注册 redis prometheus 指标
-func registerRedisPrometheus() error {
-  return ginmetrics.GetMonitor().AddMetric(HistogramRedisMetric)
+func RegisterRedisPrometheus() {
+  ginmetrics.GetMonitor().AddMetric(HistogramRedisMetric)
 }
 
 func addRedisPrometheusLabelValue(cmd string, constTime float64) {
@@ -115,13 +108,7 @@ type RedisClient interface {
   WrapProcessPipeline(old func(old func([]redis.Cmder) error) func([]redis.Cmder) error)
 }
 
-type RedisCollector struct {
-  Client                *RedisClient
-  once                  sync.Once
-  execDurationHistogram *ginmetrics.Metric
-}
-
-func addRedisExecDuration(client RedisClient) {
+func AddRedisExecDuration(client RedisClient) {
   client.WrapProcess(func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
     return func(cmd redis.Cmder) error {
       start := time.Now()
