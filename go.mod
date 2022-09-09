@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/hashicorp/consul/api v1.9.1
 	github.com/oschwald/maxminddb-golang v1.8.0
 	github.com/penglongli/gin-metrics v0.1.10
@@ -18,6 +18,7 @@ require (
 	go.etcd.io/etcd/client/v3 v3.5.0
 	golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6
 	google.golang.org/grpc v1.38.0
+	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.12
+	gorm.io/gorm v1.23.8
 )

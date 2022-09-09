@@ -1,6 +1,7 @@
 package gorm_prometheus
 
 import (
+  "strings"
   "time"
 
   "github.com/penglongli/gin-metrics/ginmetrics"
