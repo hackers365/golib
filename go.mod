@@ -6,6 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/hashicorp/consul/api v1.9.1
 	github.com/oschwald/maxminddb-golang v1.8.0
 	github.com/penglongli/gin-metrics v0.1.10

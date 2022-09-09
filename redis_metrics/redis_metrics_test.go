@@ -1,12 +1,14 @@
 package redis_metrics
 
 import (
+	"context"
 	"fmt"
 	"testing"
-	//"time"
+	"time"
 
 	//"github.com/gin-gonic/gin"
 	//"github.com/penglongli/gin-metrics/ginmetrics"
+	redis_v8 "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,3 +44,27 @@ func SetMetrics(r gin.IRoutes) {
 	m.Expose(r)
 }
 */
+
+func TestRedisV8(t *testing.T) {
+	addr := "192.168.208.214:6379"
+	psw := "ticket_dev"
+	rdb := redis_v8.NewClient(&redis_v8.Options{
+		Addr:         addr,
+		Password:     psw,
+		DialTimeout:  10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		PoolSize:     10,
+		PoolTimeout:  30 * time.Second,
+	})
+
+	rHook := &RedisV8Hook{}
+	rdb.AddHook(rHook)
+
+	err := rdb.Set(context.TODO(), "key", "value", 0).Err()
+	assert.Equal(t, err, nil, "err must be nil")
+
+	val, err := rdb.Get(context.TODO(), "key").Result()
+	assert.Equal(t, err, nil, "err must be nil")
+	fmt.Println(val)
+}
