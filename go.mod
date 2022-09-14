@@ -18,7 +18,7 @@ require (
 	go.etcd.io/etcd/client/v3 v3.5.0
 	golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6
 	google.golang.org/grpc v1.38.0
-	gorm.io/driver/mysql v1.3.6
+	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.23.8
+	gorm.io/gorm v1.21.4
 )
