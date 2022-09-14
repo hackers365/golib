@@ -2,7 +2,6 @@ package redis_metrics
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
