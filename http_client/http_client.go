@@ -106,7 +106,12 @@ func (h *httpClient) Post(requestUrl string, params map[string]interface{}, head
 	if host, ok := header["Host"]; ok {
 		req.Host = host
 	}
-	req.Header.Set("Content-Type", "application/json")
+	contentType, ok := header["Content-Type"]
+	if ok {
+		req.Header.Set("Content-Type", contentType)
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	return h.do(req)
 }
 
